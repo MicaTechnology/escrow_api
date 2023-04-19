@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	ItemsService escrowsServiceInterface = &escrowsService{}
+	EscrowsService escrowsServiceInterface = &escrowsService{}
 )
 
 type escrowsServiceInterface interface {

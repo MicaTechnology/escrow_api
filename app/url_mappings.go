@@ -8,4 +8,5 @@ import (
 
 func MapUrls() {
 	router.HandleFunc("/ping", controllers.PingController.Ping).Methods(http.MethodGet)
+	router.HandleFunc("/api/v1/escrow", controllers.EscrowController.Create).Methods(http.MethodPost)
 }

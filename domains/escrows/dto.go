@@ -1,8 +1,9 @@
 package escrows
 
 type Escrow struct {
-	Address    string `json:"address"`
+	Id         string `json:"id"`
+	address    string
 	TennatId   string `json:"tennat_id"`
-	Amount     string `json:"amount"`
+	amount     string `json:"amount"`
 	LandLordId string `json:"landlord_id"`
 }
