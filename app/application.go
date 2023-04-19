@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	logger "github.com/MicaTechnology/escrow_api/utils"
+	"github.com/MicaTechnology/escrow_api/utils/logger"
 	"github.com/gorilla/mux"
 )
 
