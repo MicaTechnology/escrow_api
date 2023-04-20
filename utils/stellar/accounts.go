@@ -2,7 +2,9 @@ package stellar
 
 import (
 	"os"
+	"strconv"
 
+	"github.com/MicaTechnology/escrow_api/domains/escrows"
 	"github.com/MicaTechnology/escrow_api/utils/logger"
 	"github.com/MicaTechnology/escrow_api/utils/rest_errors"
 	"github.com/stellar/go/clients/horizonclient"
@@ -94,13 +96,73 @@ func SetMultiSign(scrowKeypair *keypair.Full, signers []*keypair.Full) *rest_err
 		})
 	}
 
-	tx, _ := buildTransaction(escrowAccount, operations)
+	tx, rest_err := buildTransaction(escrowAccount, operations)
+	if rest_err != nil {
+		return rest_err
+	}
+
 	tx, err := tx.Sign(getPassphrase(), scrowKeypair)
 	if err != nil {
 		return restError(err)
 	}
 
-	submitTransaction(tx)
-	logger.Info("Escrow account multisign seted")
+	rest_err = submitTransaction(tx)
+	if rest_err != nil {
+		return rest_err
+	}
+	return nil
+}
+
+func ReleaseFunds(escrow *escrows.Escrow) *rest_errors.RestErr {
+	// TODO: Use a method to get operations
+	var operations []txnbuild.Operation
+	if escrow.GetClaimPercent() == 1 {
+		operations = []txnbuild.Operation{
+			&txnbuild.AccountMerge{
+				Destination: escrow.Landlord.Address,
+			},
+		}
+	} else {
+		operations = []txnbuild.Operation{
+			&txnbuild.Payment{
+				Destination: escrow.Landlord.Address,
+				Amount:      strconv.FormatFloat(escrow.GetClaimAmount(), 'f', 2, 64),
+				Asset:       txnbuild.NativeAsset{},
+			},
+			&txnbuild.AccountMerge{
+				Destination: escrow.Tenant.Address,
+			},
+		}
+	}
+
+	escrowAccount, rest_err := getAccount(escrow.Address)
+	if rest_err != nil {
+		return rest_err
+	}
+
+	tx, rest_err := buildTransaction(escrowAccount, operations)
+	if rest_err != nil {
+		return rest_err
+	}
+
+	tenantKeyPair, rest_err := GetKeypair(escrow.Tenant.GetSecret())
+	if rest_err != nil {
+		return rest_err
+	}
+	landlordKeyPair, rest_err := GetKeypair(escrow.Landlord.GetSecret())
+	if rest_err != nil {
+		return rest_err
+	}
+
+	tx, err := tx.Sign(getPassphrase(), tenantKeyPair, landlordKeyPair)
+	if err != nil {
+		return restError(err)
+	}
+
+	rest_err = submitTransaction(tx)
+	if rest_err != nil {
+		return rest_err
+	}
+	logger.Info("Funds released")
 	return nil
 }

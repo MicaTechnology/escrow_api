@@ -70,8 +70,8 @@ func (s *escrowsService) Claim(id string, claimPercent float32) (*escrows.Escrow
 	if err != nil {
 		return nil, err
 	}
-	// TODO: Release escrow amount to landlord and tenant
 	escrow.SetClaimAmount(claimPercent)
+	stellar.ReleaseFunds(escrow)
 	repo.Update(escrow)
 
 	return escrow, nil

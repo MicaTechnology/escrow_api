@@ -30,3 +30,11 @@ func (e *Escrow) SetClaimAmount(percent float32) {
 	e.claimAmount = e.Amount * float64(percent)
 	e.claimPercent = percent
 }
+
+func (e *Escrow) GetClaimAmount() float64 {
+	return e.claimAmount
+}
+
+func (e *Escrow) GetClaimPercent() float32 {
+	return e.claimPercent
+}
