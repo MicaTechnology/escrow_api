@@ -18,7 +18,7 @@ func StartApplication() {
 
 	srv := &http.Server{
 		Handler:      config.routes(),
-		Addr:         fmt.Sprintf("127.0.0.1:%s", os.Getenv("PORT")),
+		Addr:         fmt.Sprintf("0.0.0.0:%s", os.Getenv("PORT")),
 		WriteTimeout: 30 * time.Second,
 		ReadTimeout:  30 * time.Second,
 	}
