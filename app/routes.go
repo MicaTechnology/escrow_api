@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	"github.com/MicaTechnology/escrow_api/controllers"
-	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"
+	"github.com/gorilla/mux"
 )
 
 func optionsHandler(w http.ResponseWriter, r *http.Request) {
@@ -15,7 +15,7 @@ func optionsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Config) routes() http.Handler {
-	mux := chi.NewRouter()
+	mux := mux.NewRouter()
 
 	// specify who is allowed to connect
 	mux.Use(cors.Handler(cors.Options{
@@ -29,15 +29,15 @@ func (app *Config) routes() http.Handler {
 
 	mux.Use(middleware.Heartbeat("/health"))
 
-	mux.Get("/ping", controllers.PingController.Ping)
-	mux.Post("/api/v1/escrow", controllers.EscrowController.Create)
-	mux.Get("/api/v1/escrow/{id}", controllers.EscrowController.Get)
-	mux.Put("/api/v1/escrow/{id}/claim", controllers.EscrowController.Claim)
+	mux.HandleFunc("/ping", controllers.PingController.Ping).Methods(http.MethodGet)
+	mux.HandleFunc("/api/v1/escrow", controllers.EscrowController.Create).Methods(http.MethodPost)
+	mux.HandleFunc("/api/v1/escrow/{id}", controllers.EscrowController.Get).Methods(http.MethodGet)
+	mux.HandleFunc("/api/v1/escrow/{id}/claim", controllers.EscrowController.Claim).Methods(http.MethodPut)
 
 	// // Options
-	mux.Options("/api/v1/escrow", optionsHandler)
-	mux.Options("/api/v1/escrow/{id}", optionsHandler)
-	mux.Options("/api/v1/escrow/{id}/claim", optionsHandler)
+	mux.HandleFunc("/api/v1/escrow", optionsHandler).Methods(http.MethodOptions)
+	mux.HandleFunc("/api/v1/escrow/{id}", optionsHandler).Methods(http.MethodOptions)
+	mux.HandleFunc("/api/v1/escrow/{id}/claim", optionsHandler).Methods(http.MethodOptions)
 
 	return mux
 }
