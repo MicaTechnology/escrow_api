@@ -3,6 +3,9 @@ module github.com/MicaTechnology/escrow_api
 go 1.20
 
 require (
+	github.com/go-chi/chi v4.0.3+incompatible
+	github.com/go-chi/cors v1.2.1
+	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/joho/godotenv v1.5.1
 	github.com/stellar/go v0.0.0-20230417173528-602c3c4f001d
@@ -11,11 +14,7 @@ require (
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/felixge/httpsnoop v1.0.1 // indirect
-	github.com/go-chi/chi v4.0.3+incompatible // indirect
 	github.com/go-errors/errors v0.0.0-20150906023321-a41850380601 // indirect
-	github.com/google/uuid v1.3.0 // indirect
-	github.com/gorilla/handlers v1.5.1 // indirect
 	github.com/gorilla/schema v1.1.0 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.1 // indirect
 	github.com/manucorporat/sse v0.0.0-20160126180136-ee05b128a739 // indirect

@@ -5,19 +5,17 @@ import (
 	"time"
 
 	"github.com/MicaTechnology/escrow_api/utils/logger"
-	"github.com/gorilla/mux"
 )
 
-var (
-	router = mux.NewRouter()
-)
+type Config struct {
+}
 
 func StartApplication() {
-	MapUrls()
+	config := Config{}
 	StartRepositories()
 
 	srv := &http.Server{
-		Handler:      router,
+		Handler:      config.routes(),
 		Addr:         "127.0.0.1:8888",
 		WriteTimeout: 30 * time.Second,
 		ReadTimeout:  30 * time.Second,

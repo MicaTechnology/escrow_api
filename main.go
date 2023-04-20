@@ -10,7 +10,6 @@ func main() {
 	err := godotenv.Load()
 	if err != nil {
 		logger.Error("Error loading .env file", err)
-		return
 	}
 
 	app.StartApplication()

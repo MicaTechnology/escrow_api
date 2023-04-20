@@ -28,6 +28,10 @@ type escrowController struct {
 }
 
 func (c *escrowController) Create(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Allow-Control-Allow-Methods", "*")
+	w.Header().Set("Allow-Control-Allow-Headers", "*")
+	w.Header().Set("Allow-Control-Allow-Credentials", "true")
 	requestBody, err := io.ReadAll(r.Body)
 	if err != nil {
 		respErr := rest_errors.NewBadRequestError("invalid request body")
@@ -52,6 +56,10 @@ func (c *escrowController) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *escrowController) Get(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Allow-Control-Allow-Methods", "*")
+	w.Header().Set("Allow-Control-Allow-Headers", "*")
+	w.Header().Set("Allow-Control-Allow-Credentials", "true")
 	vars := mux.Vars(r)
 	escrowId := strings.TrimSpace(vars["id"])
 
@@ -69,6 +77,10 @@ type ClaimRequest struct {
 }
 
 func (c *escrowController) Claim(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Allow-Control-Allow-Methods", "*")
+	w.Header().Set("Allow-Control-Allow-Headers", "*")
+	w.Header().Set("Allow-Control-Allow-Credentials", "true")
 	vars := mux.Vars(r)
 	escrowId := strings.TrimSpace(vars["id"])
 	requestBody, err := io.ReadAll(r.Body)
