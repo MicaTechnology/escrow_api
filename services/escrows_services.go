@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/MicaTechnology/escrow_api/domains/escrows"
+	"github.com/MicaTechnology/escrow_api/repository"
 	"github.com/MicaTechnology/escrow_api/utils/logger"
 	"github.com/MicaTechnology/escrow_api/utils/rest_errors"
 	"github.com/MicaTechnology/escrow_api/utils/stellar"
@@ -31,24 +32,22 @@ func (s *escrowsService) Create(escrow escrows.Escrow) (*escrows.Escrow, *rest_e
 	if rest_err != nil {
 		return nil, rest_err
 	}
-	// TODO: We should keep this in our database
-	logger.GetLogger().Printf("Tenant public address: %s", tenantSignerKeyPair.Address())
+	escrow.Tenant.Address = tenantSignerKeyPair.Address()
 
 	landlordSignerKeyPair, rest_err := stellar.CreateAccount(micaKeypair, stellar.MinBalance)
 	if rest_err != nil {
 		return nil, rest_err
 	}
-	// TODO: We should keep this in our database
-	logger.GetLogger().Printf("Landlord public address: %s", landlordSignerKeyPair.Address())
+	escrow.Landlord.Address = landlordSignerKeyPair.Address()
 
 	escrowKeypair, _ := stellar.CreateAccount(micaKeypair, strconv.FormatFloat(escrow.Amount, 'f', 2, 64))
-	// TODO: Save escrowKeypair.Address() in our database
+	escrow.Address = escrowKeypair.Address()
 
 	stellar.SetMultiSign(escrowKeypair, []*keypair.Full{tenantSignerKeyPair, landlordSignerKeyPair, micaKeypair})
-	if err := escrow.Save(); err != nil {
+	logger.GetLogger().Printf("Mica public key %s", micaKeypair.Address())
+	if err := repository.GetEscrowRepository().Create(&escrow); err != nil {
 		return nil, err
 	}
 
-	logger.GetLogger().Printf("Mica public key %s", micaKeypair.Address())
 	return &escrow, nil
 }

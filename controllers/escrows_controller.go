@@ -8,7 +8,6 @@ import (
 	"github.com/MicaTechnology/escrow_api/domains/escrows"
 	"github.com/MicaTechnology/escrow_api/services"
 	"github.com/MicaTechnology/escrow_api/utils/http_utils"
-	"github.com/MicaTechnology/escrow_api/utils/logger"
 	"github.com/MicaTechnology/escrow_api/utils/rest_errors"
 )
 
@@ -44,6 +43,5 @@ func (c *escrowController) Create(w http.ResponseWriter, r *http.Request) {
 		http_utils.ResponseJsonError(w, createErr)
 		return
 	}
-	logger.Info("Escrow created")
 	http_utils.ResponseJson(w, http.StatusCreated, result)
 }

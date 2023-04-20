@@ -14,6 +14,7 @@ var (
 
 func StartApplication() {
 	MapUrls()
+	StartRepositories()
 
 	srv := &http.Server{
 		Handler:      router,

@@ -1,9 +1,9 @@
 package stellar
 
 import (
-	"fmt"
 	"log"
 
+	"github.com/MicaTechnology/escrow_api/utils/logger"
 	"github.com/MicaTechnology/escrow_api/utils/rest_errors"
 	"github.com/stellar/go/protocols/horizon"
 	"github.com/stellar/go/txnbuild"
@@ -42,8 +42,8 @@ func submitTransaction(tx *txnbuild.Transaction) *rest_errors.RestErr {
 	if err != nil {
 		return restError(err)
 	}
-	fmt.Printf("Transaction successfull! Hash: %s \n", resp.Hash)
-	fmt.Printf("Transaction xdr: %s \n", resp.ResultXdr)
+	logger.GetLogger().Printf("Transaction successfull! Hash: %s \n", resp.Hash)
+	logger.GetLogger().Printf("Transaction xdr: %s \n", resp.ResultXdr)
 
 	return nil
 }
