@@ -45,9 +45,10 @@ func (s *escrowsService) Create(escrow escrows.Escrow) (*escrows.Escrow, *rest_e
 	// TODO: Save escrowKeypair.Address() in our database
 
 	stellar.SetMultiSign(escrowKeypair, []*keypair.Full{tenantSignerKeyPair, landlordSignerKeyPair, micaKeypair})
-
 	if err := escrow.Save(); err != nil {
 		return nil, err
 	}
+
+	logger.GetLogger().Printf("Mica public key %s", micaKeypair.Address())
 	return &escrow, nil
 }

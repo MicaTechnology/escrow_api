@@ -18,8 +18,8 @@ func StartApplication() {
 	srv := &http.Server{
 		Handler:      router,
 		Addr:         "127.0.0.1:8888",
-		WriteTimeout: 15 * time.Second,
-		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 30 * time.Second,
+		ReadTimeout:  30 * time.Second,
 	}
 
 	logger.Info("Server starting on port 8888...")

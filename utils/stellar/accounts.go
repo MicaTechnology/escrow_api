@@ -39,21 +39,28 @@ func CreateAccount(creatorKeypair *keypair.Full, amount string) (*keypair.Full, 
 		return nil, rest_errors.NewInternalServerError("Error while creating account", err)
 	}
 
-	operation := txnbuild.CreateAccount{
-		Destination: creatorKeypair.Address(),
-		Amount:      amount,
-	}
 	account, rest_err := getAccount(creatorKeypair.Address())
 	if rest_err != nil {
 		return nil, rest_err
 	}
 
+	operation := txnbuild.CreateAccount{
+		Destination: keyPair.Address(),
+		Amount:      amount,
+	}
 	tx, rest_err := buildTransaction(account, []txnbuild.Operation{&operation})
+	if rest_err != nil {
+		return nil, rest_err
+	}
+
 	tx, err = tx.Sign(getPassphrase(), creatorKeypair)
 	if err != nil {
 		return nil, restError(err)
 	}
-	submitTransaction(tx)
+	rest_err = submitTransaction(tx)
+	if rest_err != nil {
+		return nil, rest_err
+	}
 	return keyPair, nil
 }
 
