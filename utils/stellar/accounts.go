@@ -24,8 +24,27 @@ func GetKeypair(secret_key string) (*keypair.Full, *rest_errors.RestErr) {
 	return micaKeypair, nil
 }
 
+func MicaKeypair() (*keypair.Full, *rest_errors.RestErr) {
+	if os.Getenv("ENV") == "production" {
+		micaKeypair, err := keypair.ParseFull(os.Getenv("SIGNER_SECRET_KEY"))
+		if err != nil {
+			logger.Error("Error while parsing mica keypair", err)
+			return nil, rest_errors.NewInternalServerError("Error while parsing mica keypair", err)
+		}
+		return micaKeypair, nil
+	}
+
+	keyPair, err := keypair.Random()
+	if err != nil {
+		logger.Error("Error while generate keypair", err)
+		return nil, rest_errors.NewInternalServerError("Error while creating account", err)
+	}
+	getClient().Fund(keyPair.Address())
+
+	return keyPair, nil
+}
+
 func getAccount(address string) (account horizon.Account, rest_err *rest_errors.RestErr) {
-	// Get the current state of Tennant account from the network
 	accountRequest := horizonclient.AccountRequest{AccountID: address}
 	account, err := getClient().AccountDetail(accountRequest)
 	if err != nil {
@@ -34,11 +53,20 @@ func getAccount(address string) (account horizon.Account, rest_err *rest_errors.
 	return
 }
 
-func CreateAccount(creatorKeypair *keypair.Full, amount string) (*keypair.Full, *rest_errors.RestErr) {
+func GenKeypair() (*keypair.Full, *rest_errors.RestErr) {
 	keyPair, err := keypair.Random()
 	if err != nil {
 		logger.Error("Error while generate keypair", err)
 		return nil, rest_errors.NewInternalServerError("Error while creating account", err)
+	}
+	return keyPair, nil
+}
+
+func CreateEscrowAccount(creatorKeypair *keypair.Full, escrow escrows.Escrow) (*keypair.Full, *rest_errors.RestErr) {
+	logger.Info("Creating escrow account")
+	escrowKeypair, rest_err := GenKeypair()
+	if rest_err != nil {
+		return nil, rest_err
 	}
 
 	account, rest_err := getAccount(creatorKeypair.Address())
@@ -46,16 +74,27 @@ func CreateAccount(creatorKeypair *keypair.Full, amount string) (*keypair.Full, 
 		return nil, rest_err
 	}
 
-	operation := txnbuild.CreateAccount{
-		Destination: keyPair.Address(),
-		Amount:      amount,
+	operations := []txnbuild.Operation{
+		&txnbuild.CreateAccount{
+			Destination: escrow.Tenant.Address,
+			Amount:      MinBalance,
+		},
+		&txnbuild.CreateAccount{
+			Destination: escrow.Landlord.Address,
+			Amount:      MinBalance,
+		},
+		&txnbuild.CreateAccount{
+			Destination: escrowKeypair.Address(),
+			Amount:      strconv.FormatFloat(escrow.Amount, 'f', 2, 64),
+		},
 	}
-	tx, rest_err := buildTransaction(account, []txnbuild.Operation{&operation})
+
+	tx, rest_err := buildTransaction(account, operations)
 	if rest_err != nil {
 		return nil, rest_err
 	}
 
-	tx, err = tx.Sign(getPassphrase(), creatorKeypair)
+	tx, err := tx.Sign(getPassphrase(), creatorKeypair)
 	if err != nil {
 		return nil, restError(err)
 	}
@@ -63,7 +102,7 @@ func CreateAccount(creatorKeypair *keypair.Full, amount string) (*keypair.Full, 
 	if rest_err != nil {
 		return nil, rest_err
 	}
-	return keyPair, nil
+	return escrowKeypair, nil
 }
 
 func FundAccount(address string, amount float64) *rest_errors.RestErr {
@@ -77,6 +116,7 @@ func FundAccount(address string, amount float64) *rest_errors.RestErr {
 }
 
 func SetMultiSign(scrowKeypair *keypair.Full, signers []*keypair.Full) *rest_errors.RestErr {
+	logger.Info("Setting multisign")
 	escrowAccount, _ := getAccount(scrowKeypair.Address())
 
 	operations := []txnbuild.Operation{
@@ -114,6 +154,7 @@ func SetMultiSign(scrowKeypair *keypair.Full, signers []*keypair.Full) *rest_err
 }
 
 func ReleaseFunds(escrow *escrows.Escrow) *rest_errors.RestErr {
+	logger.Info("Releasing funds")
 	// TODO: Use a method to get operations
 	var operations []txnbuild.Operation
 	if escrow.GetClaimPercent() == 1 {
@@ -163,6 +204,5 @@ func ReleaseFunds(escrow *escrows.Escrow) *rest_errors.RestErr {
 	if rest_err != nil {
 		return rest_err
 	}
-	logger.Info("Funds released")
 	return nil
 }

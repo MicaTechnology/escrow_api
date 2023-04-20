@@ -1,9 +1,6 @@
 package services
 
 import (
-	"os"
-	"strconv"
-
 	"github.com/MicaTechnology/escrow_api/domains/escrows"
 	"github.com/MicaTechnology/escrow_api/repository"
 	"github.com/MicaTechnology/escrow_api/utils/logger"
@@ -25,26 +22,26 @@ type escrowsServiceInterface interface {
 type escrowsService struct{}
 
 func (s *escrowsService) Create(escrow escrows.Escrow) (*escrows.Escrow, *rest_errors.RestErr) {
-	micaKeypair, rest_err := stellar.GetKeypair(os.Getenv("SIGNER_SECRET_KEY"))
+	logger.Info("Starting to create an escrow")
+	micaKeypair, rest_err := stellar.MicaKeypair()
 	if rest_err != nil {
 		return nil, rest_err
 	}
-
-	tenantSignerKeyPair, rest_err := stellar.CreateAccount(micaKeypair, stellar.MinBalance)
+	tenantSignerKeyPair, rest_err := stellar.GenKeypair()
 	if rest_err != nil {
 		return nil, rest_err
 	}
 	escrow.Tenant.Address = tenantSignerKeyPair.Address()
 	escrow.Tenant.SetSecret(tenantSignerKeyPair.Seed())
 
-	landlordSignerKeyPair, rest_err := stellar.CreateAccount(micaKeypair, stellar.MinBalance)
+	landlordSignerKeyPair, rest_err := stellar.GenKeypair()
 	if rest_err != nil {
 		return nil, rest_err
 	}
 	escrow.Landlord.Address = landlordSignerKeyPair.Address()
 	escrow.Landlord.SetSecret(landlordSignerKeyPair.Seed())
 
-	escrowKeypair, _ := stellar.CreateAccount(micaKeypair, strconv.FormatFloat(escrow.Amount, 'f', 2, 64))
+	escrowKeypair, _ := stellar.CreateEscrowAccount(micaKeypair, escrow)
 	escrow.Address = escrowKeypair.Address()
 
 	stellar.SetMultiSign(escrowKeypair, []*keypair.Full{tenantSignerKeyPair, landlordSignerKeyPair, micaKeypair})
