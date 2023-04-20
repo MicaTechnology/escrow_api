@@ -18,6 +18,7 @@ var (
 
 type escrowsServiceInterface interface {
 	Create(escrow escrows.Escrow) (*escrows.Escrow, *rest_errors.RestErr)
+	Get(id string) (*escrows.Escrow, *rest_errors.RestErr)
 }
 
 type escrowsService struct{}
@@ -33,12 +34,14 @@ func (s *escrowsService) Create(escrow escrows.Escrow) (*escrows.Escrow, *rest_e
 		return nil, rest_err
 	}
 	escrow.Tenant.Address = tenantSignerKeyPair.Address()
+	escrow.Tenant.SetSecret(tenantSignerKeyPair.Seed())
 
 	landlordSignerKeyPair, rest_err := stellar.CreateAccount(micaKeypair, stellar.MinBalance)
 	if rest_err != nil {
 		return nil, rest_err
 	}
 	escrow.Landlord.Address = landlordSignerKeyPair.Address()
+	escrow.Landlord.SetSecret(landlordSignerKeyPair.Seed())
 
 	escrowKeypair, _ := stellar.CreateAccount(micaKeypair, strconv.FormatFloat(escrow.Amount, 'f', 2, 64))
 	escrow.Address = escrowKeypair.Address()
@@ -50,4 +53,12 @@ func (s *escrowsService) Create(escrow escrows.Escrow) (*escrows.Escrow, *rest_e
 	}
 
 	return &escrow, nil
+}
+
+func (s *escrowsService) Get(id string) (*escrows.Escrow, *rest_errors.RestErr) {
+	escrow, err := repository.GetEscrowRepository().Get(id)
+	if err != nil {
+		return nil, err
+	}
+	return escrow, nil
 }

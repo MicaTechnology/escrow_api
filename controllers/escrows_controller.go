@@ -4,11 +4,13 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/MicaTechnology/escrow_api/domains/escrows"
 	"github.com/MicaTechnology/escrow_api/services"
 	"github.com/MicaTechnology/escrow_api/utils/http_utils"
 	"github.com/MicaTechnology/escrow_api/utils/rest_errors"
+	"github.com/gorilla/mux"
 )
 
 var (
@@ -17,6 +19,7 @@ var (
 
 type escrowControllerInterface interface {
 	Create(w http.ResponseWriter, r *http.Request)
+	Get(w http.ResponseWriter, r *http.Request)
 }
 
 type escrowController struct {
@@ -44,4 +47,16 @@ func (c *escrowController) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http_utils.ResponseJson(w, http.StatusCreated, result)
+}
+
+func (c *escrowController) Get(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	escrowId := strings.TrimSpace(vars["id"])
+
+	escrow, getErr := services.EscrowsService.Get(escrowId)
+	if getErr != nil {
+		http_utils.ResponseJsonError(w, getErr)
+		return
+	}
+	http_utils.ResponseJson(w, http.StatusOK, escrow)
 }

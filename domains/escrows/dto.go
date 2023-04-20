@@ -14,3 +14,8 @@ type Account struct {
 	UserId  string `json:"user_id"`
 	secret  string
 }
+
+func (a *Account) SetSecret(secret string) {
+	// TODO: encrypt secret
+	a.secret = secret
+}
