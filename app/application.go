@@ -1,7 +1,9 @@
 package app
 
 import (
+	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/MicaTechnology/escrow_api/utils/logger"
@@ -16,12 +18,12 @@ func StartApplication() {
 
 	srv := &http.Server{
 		Handler:      config.routes(),
-		Addr:         "127.0.0.1:8888",
+		Addr:         fmt.Sprintf("127.0.0.1:%s", os.Getenv("PORT")),
 		WriteTimeout: 30 * time.Second,
 		ReadTimeout:  30 * time.Second,
 	}
 
-	logger.Info("Server starting on port 8888...")
+	logger.GetLogger().Printf("Server starting on port %s", os.Getenv("PORT"))
 	if err := srv.ListenAndServe(); err != nil {
 		panic(err)
 	}
