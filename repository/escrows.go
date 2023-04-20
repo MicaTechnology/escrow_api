@@ -9,6 +9,7 @@ type EscrowRepository interface {
 	Repository
 	Create(escrow *escrows.Escrow) *rest_errors.RestErr
 	Get(id string) (*escrows.Escrow, *rest_errors.RestErr)
+	Update(escrow *escrows.Escrow) *rest_errors.RestErr
 }
 
 var implementation EscrowRepository

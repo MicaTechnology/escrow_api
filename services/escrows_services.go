@@ -19,6 +19,7 @@ var (
 type escrowsServiceInterface interface {
 	Create(escrow escrows.Escrow) (*escrows.Escrow, *rest_errors.RestErr)
 	Get(id string) (*escrows.Escrow, *rest_errors.RestErr)
+	Claim(id string, claim float32) (*escrows.Escrow, *rest_errors.RestErr)
 }
 
 type escrowsService struct{}
@@ -60,5 +61,18 @@ func (s *escrowsService) Get(id string) (*escrows.Escrow, *rest_errors.RestErr) 
 	if err != nil {
 		return nil, err
 	}
+	return escrow, nil
+}
+
+func (s *escrowsService) Claim(id string, claimPercent float32) (*escrows.Escrow, *rest_errors.RestErr) {
+	repo := repository.GetEscrowRepository()
+	escrow, err := repo.Get(id)
+	if err != nil {
+		return nil, err
+	}
+	// TODO: Release escrow amount to landlord and tenant
+	escrow.SetClaimAmount(claimPercent)
+	repo.Update(escrow)
+
 	return escrow, nil
 }
