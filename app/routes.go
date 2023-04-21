@@ -10,6 +10,11 @@ import (
 )
 
 func optionsHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Allow-Control-Allow-Methods", "*")
+	w.Header().Set("Allow-Control-Allow-Headers", "*")
+	w.Header().Set("Allow-Control-Allow-Credentials", "true")
+
 	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 	w.WriteHeader(http.StatusOK)
 }
