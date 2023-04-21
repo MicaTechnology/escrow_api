@@ -98,7 +98,7 @@ func (c *escrowController) Claim(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	escrow, claimErr := services.EscrowsService.Claim(escrowId, claimRequest.ClaimPercent)
+	escrow, claimErr := services.EscrowsService.Claim(escrowId, claimRequest.ClaimPercent/100)
 	if claimErr != nil {
 		http_utils.ResponseJsonError(w, claimErr)
 		return
