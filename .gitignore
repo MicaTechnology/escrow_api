@@ -13,3 +13,9 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+
+# Debugger
+__debug_bin
+
+# Envs
+.env
