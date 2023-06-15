@@ -47,6 +47,10 @@ func (c *friendBotController) AddFunds(w http.ResponseWriter, r *http.Request) {
 		http_utils.ResponseJsonError(w, respErr)
 		return
 	}
+	if respErr := fundRequest.Validate(); respErr != nil {
+		http_utils.ResponseJsonError(w, respErr)
+		return
+	}
 
 	fundErr := services.FriendBotService.AddFunds(fundRequest)
 	if fundErr != nil {

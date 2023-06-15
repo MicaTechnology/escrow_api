@@ -16,20 +16,20 @@ const friendBotAmount = 9500.0
 var FriendBotService friendBotInterface = &friendBotService{}
 
 type friendBotInterface interface {
-	AddFunds(fund_request friend_bot.FundRequest) *rest_errors.RestErr
+	AddFunds(friend_bot.FundRequest) *rest_errors.RestErr
 }
 
 type friendBotService struct{}
 
-func (s *friendBotService) AddFunds(fund_request friend_bot.FundRequest) *rest_errors.RestErr {
-	destinationKeypair, err := keypair.Parse(fund_request.Address)
+func (s *friendBotService) AddFunds(fundRequest friend_bot.FundRequest) *rest_errors.RestErr {
+	destinationKeypair, err := keypair.Parse(fundRequest.Address)
 	if err != nil {
 		logger.Error("Error while parsing address", err)
-		return rest_errors.NewInternalServerError("Invalid Address", err)
+		return rest_errors.NewBadRequestError("Invalid Address")
 	}
 
-	size := int(math.Ceil(fund_request.Amount / friendBotAmount))
-	logger.GetLogger().Printf("Merge %d accounts in %s", size, destinationKeypair.Address())
+	size := int(math.Ceil(fundRequest.Amount / friendBotAmount))
+	logger.GetLogger().Printf("Merging %d accounts in %s", size, destinationKeypair.Address())
 
 	operation := txnbuild.AccountMerge{
 		Destination: destinationKeypair.Address(),
