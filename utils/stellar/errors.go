@@ -8,9 +8,9 @@ import (
 
 func restError(err error) *rest_errors.RestErr {
 	if p := horizonclient.GetError(err); p != nil {
-		logger.GetLogger().Printf("  Info: %s\n", p.Problem)
+		logger.Error("Info: %s\n", p.Problem)
 		if results, ok := p.Problem.Extras["result_codes"]; ok {
-			logger.GetLogger().Printf("  Extras: %s\n", results)
+			logger.GetLogger().Printf("Extras: %s\n", results)
 		}
 	}
 	return rest_errors.NewInternalServerError("error connecting to stellar", err)

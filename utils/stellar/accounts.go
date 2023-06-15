@@ -1,6 +1,8 @@
 package stellar
 
 import (
+	"log"
+	"net/http"
 	"os"
 	"strconv"
 
@@ -13,7 +15,21 @@ import (
 	"github.com/stellar/go/txnbuild"
 )
 
-const MinBalance = "1.0"
+const (
+	// FuturenetNetworkPassphrase is the pass phrase used for every transaction intended for the SDF-run futurenet network
+	FuturenetNetworkPassphrase = "Test SDF Future Network ; October 2022"
+	MinBalance                 = "1.0"
+)
+
+var (
+	futurenetClient = &horizonclient.Client{
+		HorizonURL: "https://horizon-futurenet.stellar.org/",
+		HTTP:       http.DefaultClient,
+	}
+	preconditions = txnbuild.Preconditions{
+		TimeBounds: txnbuild.NewTimeout(300),
+	}
+)
 
 func GetKeypair(secret_key string) (*keypair.Full, *rest_errors.RestErr) {
 	micaKeypair, err := keypair.ParseFull(secret_key)
@@ -203,6 +219,53 @@ func ReleaseFunds(escrow *escrows.Escrow) *rest_errors.RestErr {
 	rest_err = submitTransaction(tx)
 	if rest_err != nil {
 		return rest_err
+	}
+	return nil
+}
+
+func MergeAccount(operation txnbuild.AccountMerge) *rest_errors.RestErr {
+	questKeypair, _ := keypair.Random()
+
+	// Friendbot
+	futurenetClient.Fund(questKeypair.Address())
+
+	accountRequest := horizonclient.AccountRequest{AccountID: questKeypair.Address()}
+	questAccount, err := futurenetClient.AccountDetail(accountRequest)
+	if err != nil {
+		return restError(err)
+	}
+	// The destination account we want to merge our account into. This will be the account that receives all our XLM during the merge operation
+
+	// Construct the transaction that holds the operations to execute on the network
+	tx, err := txnbuild.NewTransaction(
+		txnbuild.TransactionParams{
+			SourceAccount:        &questAccount,
+			IncrementSequenceNum: true,
+			Operations:           []txnbuild.Operation{&operation},
+			BaseFee:              txnbuild.MinBaseFee,
+			Preconditions:        preconditions,
+		},
+	)
+	if err != nil {
+		return restError(err)
+	}
+
+	// Sign the transaction
+	tx, err = tx.Sign(FuturenetNetworkPassphrase, questKeypair)
+	if err != nil {
+		return restError(err)
+	}
+
+	// Get the base 64 encoded transaction envelope
+	txe, err := tx.Base64()
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	// Send the transaction to the network
+	_, err = futurenetClient.SubmitTransactionXDR(txe)
+	if err != nil {
+		return restError(err)
 	}
 	return nil
 }

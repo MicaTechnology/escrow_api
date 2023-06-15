@@ -35,6 +35,7 @@ func (app *Config) routes() http.Handler {
 	mux.Use(middleware.Heartbeat("/health"))
 
 	mux.HandleFunc("/ping", controllers.PingController.Ping).Methods(http.MethodGet)
+	mux.HandleFunc("/friend-bot/add-funds", controllers.FriendBotController.AddFunds).Methods(http.MethodPut)
 	mux.HandleFunc("/api/v1/escrow", controllers.EscrowController.Create).Methods(http.MethodPost)
 	mux.HandleFunc("/api/v1/escrow/{id}", controllers.EscrowController.Get).Methods(http.MethodGet)
 	mux.HandleFunc("/api/v1/escrow/{id}/claim", controllers.EscrowController.Claim).Methods(http.MethodPut)
