@@ -11,7 +11,7 @@ import (
 	"github.com/stellar/go/txnbuild"
 )
 
-const friendBotAmount = 9500.0
+const friendBotAmount = 9999.0
 
 var FriendBotService friendBotInterface = &friendBotService{}
 

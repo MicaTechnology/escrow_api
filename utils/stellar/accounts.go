@@ -26,9 +26,6 @@ var (
 		HorizonURL: "https://horizon-futurenet.stellar.org/",
 		HTTP:       http.DefaultClient,
 	}
-	preconditions = txnbuild.Preconditions{
-		TimeBounds: txnbuild.NewTimeout(300),
-	}
 )
 
 func GetKeypair(secret_key string) (*keypair.Full, *rest_errors.RestErr) {
@@ -243,7 +240,9 @@ func MergeAccount(operation txnbuild.AccountMerge) *rest_errors.RestErr {
 			IncrementSequenceNum: true,
 			Operations:           []txnbuild.Operation{&operation},
 			BaseFee:              txnbuild.MinBaseFee,
-			Preconditions:        preconditions,
+			Preconditions: txnbuild.Preconditions{
+				TimeBounds: txnbuild.NewTimeout(300),
+			},
 		},
 	)
 	if err != nil {
